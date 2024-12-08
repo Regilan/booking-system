@@ -1,6 +1,7 @@
 package com.cloudbees.booking.model;
 
 import com.cloudbees.booking.dto.BookingStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,6 +54,12 @@ public class Receipt {
     @Setter
     private BookingStatus bookingStatus;
 
+    @OneToOne
+    @JoinColumn(name = "seat_id", referencedColumnName = "id")
+    @Setter
+    @JsonIgnore
+    private Seat seat;
+
     public Receipt(String source, String destination, Float farePaid) {
         this.source = source;
         this.destination = destination;
@@ -62,5 +69,12 @@ public class Receipt {
     public Receipt forPassenger(final Passenger passenger) {
         this.passenger = passenger;
         return this;
+    }
+
+    public void assignSeat(Seat seat) {
+        seat.setIsAvailable(false);
+        seat.setPassenger(passenger);
+        seat.setReceipt(this);
+        this.seat = seat;
     }
 }

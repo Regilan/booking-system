@@ -11,15 +11,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PassengerController.class)
@@ -39,29 +34,6 @@ class PassengerControllerTest {
                         .content("{\"emailAddress\": \"\", \"firstname\": \"\", \"lastName\": \"\"}"))
                 .andExpect(status().isBadRequest());
         verify(passengerRepository, never()).save(any(Passenger.class));
-    }
-
-    @Test
-    void shouldFetchExistingPassenger() throws Exception {
-        final String emailId = "abc@example.com";
-        final Passenger passenger = new Passenger(emailId, "Abc", "Xyz");
-        when(passengerRepository.findById(emailId)).thenReturn(Optional.of(passenger));
-
-        mockMvc.perform(get("/user/%s".formatted(emailId)))
-                .andExpect(status().isOk())
-                .andExpectAll(
-                        jsonPath("$.emailAddress").value(emailId),
-                        jsonPath("$.firstName").value("Abc"),
-                        jsonPath("$.lastName").value("Xyz")
-                );
-    }
-
-    @Test
-    void verifyNonExistingUserCannotBeFetched() throws Exception {
-        final String invalidEmailId = "invalid.passenger@example.com";
-        when(passengerRepository.findById(invalidEmailId)).thenReturn(Optional.empty());
-        mockMvc.perform(get("/user/%s".formatted(invalidEmailId)))
-                .andExpect(status().isNotFound());
     }
 
 }

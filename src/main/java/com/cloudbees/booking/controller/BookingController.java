@@ -1,6 +1,7 @@
 package com.cloudbees.booking.controller;
 
 import com.cloudbees.booking.dto.Ticket;
+import com.cloudbees.booking.dto.exception.BadRequestException;
 import com.cloudbees.booking.model.Passenger;
 import com.cloudbees.booking.model.Receipt;
 import com.cloudbees.booking.service.booking.BookingService;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,5 +39,10 @@ public class BookingController {
     @PostMapping("/cancel-booking/{emailAddress}")
     public Receipt cancelBooking(@PathVariable final String emailAddress) {
         return bookingService.cancelBooking(emailAddress);
+    }
+
+    @PostMapping("/change-seat/{emailAddress}")
+    public Ticket modifyBooking(@PathVariable final String emailAddress, @RequestParam("seat") final String newSeatNumber) throws BadRequestException {
+        return bookingService.modifySeatBooking(emailAddress, newSeatNumber);
     }
 }

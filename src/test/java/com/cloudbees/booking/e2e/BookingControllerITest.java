@@ -4,8 +4,11 @@ import com.cloudbees.booking.dto.BookingStatus;
 import com.cloudbees.booking.dto.Ticket;
 import com.cloudbees.booking.model.Passenger;
 import com.cloudbees.booking.model.Receipt;
+import com.cloudbees.booking.model.Seat;
 import com.cloudbees.booking.repository.PassengerRepository;
 import com.cloudbees.booking.repository.ReceiptRepository;
+import com.cloudbees.booking.repository.SeatRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,12 +35,29 @@ class BookingControllerITest {
     @Autowired
     private ReceiptRepository receiptRepository;
 
+    @Autowired
+    private SeatRepository seatRepository;
+
     private final static String EMAIL_ADDRESS = "abc@example.com";
 
     @BeforeEach
-    void setup() {
-        passengerRepository.deleteAll();
+    void setUp() {
+        cleanDb();
+        seatRepository.saveAll(List.of(
+                new Seat("A2"),
+                new Seat("B2")
+        ));
+    }
+
+    @AfterEach
+    void cleanUp() {
+        cleanDb();
+    }
+
+    private void cleanDb() {
         receiptRepository.deleteAll();
+        seatRepository.deleteAll();
+        passengerRepository.deleteAll();
     }
 
     @Test
@@ -78,6 +98,7 @@ class BookingControllerITest {
                 () -> Assertions.assertNotNull(receipt.getId()),
                 () -> Assertions.assertNotNull(receipt.getPassenger())
         );
+        Assertions.assertFalse(seatRepository.findByNumber("A2").get().getIsAvailable());
     }
 
     @Test
@@ -89,6 +110,32 @@ class BookingControllerITest {
 
         Receipt receipt = assertResponse(response);
         Assertions.assertEquals(BookingStatus.CANCELLED, receipt.getBookingStatus());
+        Assertions.assertTrue(seatRepository.findByNumber("A2").get().getIsAvailable());
+    }
+
+    @Test
+    void verifySeatChange() {
+        final Passenger passenger = createNewPassenger();
+        addReceipt(passenger);
+        final String newSeatNumber = "B2";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(headers);
+        ResponseEntity<Ticket> response = testRestTemplate.postForEntity("/change-seat/%s?seat=%s".formatted(EMAIL_ADDRESS, newSeatNumber), request, Ticket.class);
+
+        Ticket ticket = assertResponse(response);
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(EMAIL_ADDRESS, ticket.getPassenger().getEmailAddress()),
+                () -> Assertions.assertNotNull(ticket.getReceipt().getId()),
+                () -> Assertions.assertEquals(BookingStatus.CONFIRMED, ticket.getReceipt().getStatus()),
+                () -> Assertions.assertEquals(newSeatNumber, ticket.getSeatAllocated())
+        );
+
+        Seat oldSeat = seatRepository.findByNumber("A2").get();
+        Seat newSeat = seatRepository.findByNumber(newSeatNumber).get();
+        Assertions.assertTrue(oldSeat.getIsAvailable());
+        Assertions.assertFalse(newSeat.getIsAvailable());
     }
 
     private Passenger createNewPassenger() {
@@ -98,8 +145,11 @@ class BookingControllerITest {
 
     private void addReceipt(Passenger passenger) {
         final Receipt receiptToSave = new Receipt("London", "France", 20.0f).forPassenger(passenger);
+        Seat vacantSeat = seatRepository.findByNumber("A2").get();
+        receiptToSave.assignSeat(vacantSeat);
         receiptToSave.setBookingStatus(BookingStatus.CONFIRMED);
-        receiptRepository.save(receiptToSave);
+        receiptRepository.saveIfAbsent(receiptToSave);
+        seatRepository.save(vacantSeat);
     }
 
     private <T> T assertResponse(ResponseEntity<T> response) {
