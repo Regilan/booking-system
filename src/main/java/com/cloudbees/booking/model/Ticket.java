@@ -1,5 +1,6 @@
 package com.cloudbees.booking.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -10,7 +11,8 @@ import lombok.Getter;
 public class Ticket {
 
     @NotNull
-    private Passenger user;
+    @JsonProperty("user")
+    private Passenger passenger;
 
     @NotNull
     private Receipt receipt;

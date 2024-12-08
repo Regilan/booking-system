@@ -61,11 +61,11 @@ class BookingControllerITest {
         Assertions.assertEquals(1, receipts.size());
 
         Ticket ticket = response.getBody();
-        System.out.println(ticket.getReceipt().getEmailAddress());
         Assertions.assertAll(
-                () -> Assertions.assertEquals(emailId, ticket.getUser().getEmailAddress()),
+                () -> Assertions.assertEquals(emailId, ticket.getPassenger().getEmailAddress()),
                 () -> Assertions.assertNotNull(ticket.getReceipt().getId()),
-                () -> Assertions.assertNotNull(ticket.getSeatAllocated())
+                () -> Assertions.assertNotNull(ticket.getSeatAllocated()),
+                () -> Assertions.assertNull(ticket.getReceipt().getEmailAddress())
         );
     }
 
