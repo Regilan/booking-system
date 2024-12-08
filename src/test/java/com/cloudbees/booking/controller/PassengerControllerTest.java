@@ -2,7 +2,7 @@ package com.cloudbees.booking.controller;
 
 import com.cloudbees.booking.model.Passenger;
 import com.cloudbees.booking.repository.PassengerRepository;
-import com.cloudbees.booking.service.PassengerServiceImpl;
+import com.cloudbees.booking.service.passenger.PassengerServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

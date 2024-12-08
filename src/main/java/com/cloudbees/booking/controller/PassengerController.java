@@ -1,7 +1,7 @@
 package com.cloudbees.booking.controller;
 
 import com.cloudbees.booking.model.Passenger;
-import com.cloudbees.booking.service.PassengerService;
+import com.cloudbees.booking.service.passenger.PassengerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,13 +22,13 @@ public class PassengerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void createNewPassenger(@RequestBody @Valid Passenger passenger) {
+    public void createNewPassenger(@RequestBody @Valid final Passenger passenger) {
         passengerService.createNewPassenger(passenger);
     }
 
     @GetMapping("/{emailAddress}")
     @ResponseStatus(HttpStatus.OK)
-    public Passenger fetchPassenger(@PathVariable String emailAddress) {
+    public Passenger fetchPassenger(@PathVariable final String emailAddress) {
         return passengerService.getPassenger(emailAddress);
     }
 
