@@ -1,26 +1,26 @@
 package com.cloudbees.booking.handler;
 
+import com.cloudbees.booking.dto.exception.BadRequestException;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
-public class AppExceptionHandler {
+public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({ConstraintViolationException.class, EntityExistsException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public void handleBadRequestException() {
-        // When given data is invalid
+    @ExceptionHandler({BadRequestException.class, ConstraintViolationException.class, EntityExistsException.class})
+    public ResponseEntity<String> handleCommonException(Exception exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void handleNotFoundException() {
-        // When record not found
+    public ResponseEntity<String> handleNotFoundException() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Requested information not found");
     }
 
 }

@@ -1,11 +1,9 @@
 package com.cloudbees.booking.model;
 
-import com.cloudbees.booking.dto.BookingStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -48,10 +46,11 @@ public class Receipt {
     @JsonProperty("user")
     private Passenger passenger;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @OneToOne
+    @JoinColumn(name = "seat_id", referencedColumnName = "id")
     @Setter
-    private BookingStatus bookingStatus;
+    @JsonIgnore
+    private Seat seat;
 
     public Receipt(String source, String destination, Float farePaid) {
         this.source = source;
@@ -62,5 +61,12 @@ public class Receipt {
     public Receipt forPassenger(final Passenger passenger) {
         this.passenger = passenger;
         return this;
+    }
+
+    public void assignSeat(Seat seat) {
+        seat.setIsAvailable(false);
+        seat.setPassenger(passenger);
+        seat.setReceipt(this);
+        this.seat = seat;
     }
 }
