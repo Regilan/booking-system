@@ -1,4 +1,4 @@
-package com.cloudbees.booking.service;
+package com.cloudbees.booking.service.passenger;
 
 import com.cloudbees.booking.model.Passenger;
 import com.cloudbees.booking.repository.PassengerRepository;
