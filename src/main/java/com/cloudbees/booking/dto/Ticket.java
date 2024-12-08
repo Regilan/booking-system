@@ -1,13 +1,14 @@
 package com.cloudbees.booking.dto;
 
 import com.cloudbees.booking.model.Passenger;
-import com.cloudbees.booking.model.Receipt;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class Ticket {
 
     @NotNull
@@ -19,11 +20,5 @@ public class Ticket {
 
     @NotBlank
     private String seatAllocated;
-
-    public Ticket(final Receipt receipt, final String seatAllocated) {
-        this.passenger = receipt.getPassenger();
-        this.receipt = new ShowReceipt(receipt);
-        this.seatAllocated = seatAllocated;
-    }
 
 }

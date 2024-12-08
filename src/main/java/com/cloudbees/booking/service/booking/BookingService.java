@@ -8,4 +8,6 @@ public interface BookingService {
     Ticket book(Receipt receipt);
 
     Receipt findReceipt(String emailAddress);
+
+    Receipt cancelBooking(String emailAddress);
 }
