@@ -45,10 +45,8 @@ class SeatControllerTest {
 
         Receipt receipt1 = new Receipt("London", "Paris", 20.0f);
         receipt1.forPassenger(passenger1);
-        receipt1.setBookingStatus(BookingStatus.CONFIRMED);
         Receipt receipt2 = new Receipt("London", "Paris", 20.0f);
         receipt2.forPassenger(passenger2);
-        receipt2.setBookingStatus(BookingStatus.CONFIRMED);
 
         Seat seat1 = new Seat("A1");
         Seat seat2 = new Seat("A2");

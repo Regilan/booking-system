@@ -1,12 +1,9 @@
 package com.cloudbees.booking.model;
 
-import com.cloudbees.booking.dto.BookingStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -48,11 +45,6 @@ public class Receipt {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonProperty("user")
     private Passenger passenger;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    @Setter
-    private BookingStatus bookingStatus;
 
     @OneToOne
     @JoinColumn(name = "seat_id", referencedColumnName = "id")

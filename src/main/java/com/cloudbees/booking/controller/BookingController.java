@@ -37,8 +37,8 @@ public class BookingController {
     }
 
     @PostMapping("/cancel-booking/{emailAddress}")
-    public Receipt cancelBooking(@PathVariable final String emailAddress) {
-        return bookingService.cancelBooking(emailAddress);
+    public void cancelBooking(@PathVariable final String emailAddress) {
+        bookingService.cancelBooking(emailAddress);
     }
 
     @PostMapping("/change-seat/{emailAddress}")

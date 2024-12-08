@@ -10,7 +10,7 @@ public interface BookingService {
 
     Receipt findReceipt(String emailAddress);
 
-    Receipt cancelBooking(String emailAddress);
+    void cancelBooking(String emailAddress);
 
     Ticket modifySeatBooking(String emailAddress, String newSeatNumber) throws BadRequestException;
 }

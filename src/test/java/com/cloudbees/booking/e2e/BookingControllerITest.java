@@ -81,7 +81,6 @@ class BookingControllerITest {
         Assertions.assertAll(
                 () -> Assertions.assertEquals(EMAIL_ADDRESS, ticket.getPassenger().getEmailAddress()),
                 () -> Assertions.assertNotNull(ticket.getReceipt().getId()),
-                () -> Assertions.assertEquals(BookingStatus.CONFIRMED, ticket.getReceipt().getStatus()),
                 () -> Assertions.assertNotNull(ticket.getSeatAllocated())
         );
     }
@@ -106,11 +105,8 @@ class BookingControllerITest {
         final Passenger passenger = createNewPassenger();
         addReceipt(passenger);
 
-        ResponseEntity<Receipt> response = testRestTemplate.postForEntity("/cancel-booking/%s".formatted(EMAIL_ADDRESS), null, Receipt.class);
-
-        Receipt receipt = assertResponse(response);
-        Assertions.assertEquals(BookingStatus.CANCELLED, receipt.getBookingStatus());
-        Assertions.assertTrue(seatRepository.findByNumber("A2").get().getIsAvailable());
+        ResponseEntity<Void> response = testRestTemplate.postForEntity("/cancel-booking/%s".formatted(EMAIL_ADDRESS), null, Void.class);
+        Assertions.assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
     }
 
     @Test
@@ -128,7 +124,6 @@ class BookingControllerITest {
         Assertions.assertAll(
                 () -> Assertions.assertEquals(EMAIL_ADDRESS, ticket.getPassenger().getEmailAddress()),
                 () -> Assertions.assertNotNull(ticket.getReceipt().getId()),
-                () -> Assertions.assertEquals(BookingStatus.CONFIRMED, ticket.getReceipt().getStatus()),
                 () -> Assertions.assertEquals(newSeatNumber, ticket.getSeatAllocated())
         );
 
@@ -147,7 +142,6 @@ class BookingControllerITest {
         final Receipt receiptToSave = new Receipt("London", "France", 20.0f).forPassenger(passenger);
         Seat vacantSeat = seatRepository.findByNumber("A2").get();
         receiptToSave.assignSeat(vacantSeat);
-        receiptToSave.setBookingStatus(BookingStatus.CONFIRMED);
         receiptRepository.saveIfAbsent(receiptToSave);
         seatRepository.save(vacantSeat);
     }

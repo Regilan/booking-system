@@ -1,6 +1,5 @@
 package com.cloudbees.booking.service.booking;
 
-import com.cloudbees.booking.dto.BookingStatus;
 import com.cloudbees.booking.dto.ShowReceipt;
 import com.cloudbees.booking.dto.Ticket;
 import com.cloudbees.booking.dto.exception.BadRequestException;
@@ -25,7 +24,6 @@ public class TrainBookingService implements BookingService {
     public Ticket book(Receipt receipt) {
         Seat seat = seatService.getVacantSeat();
         receipt.assignSeat(seat);
-        receipt.setBookingStatus(BookingStatus.CONFIRMED);
 
         Receipt savedReceipt = receiptRepository.saveIfAbsent(receipt);
         return new Ticket(savedReceipt.getPassenger(), new ShowReceipt(receipt), seat.getNumber());
@@ -38,11 +36,10 @@ public class TrainBookingService implements BookingService {
     }
 
     @Override
-    public Receipt cancelBooking(String emailAddress) {
+    public void cancelBooking(String emailAddress) {
         Receipt receipt = findReceipt(emailAddress);
-        receipt.setBookingStatus(BookingStatus.CANCELLED);
         seatService.vacate(receipt.getSeat());
-        return receiptRepository.save(receipt);
+        receiptRepository.delete(receipt);
     }
 
     @Override
