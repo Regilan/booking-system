@@ -1,5 +1,6 @@
 package com.cloudbees.booking.e2e;
 
+import com.cloudbees.booking.dto.BookingStatus;
 import com.cloudbees.booking.dto.Ticket;
 import com.cloudbees.booking.model.Passenger;
 import com.cloudbees.booking.model.Receipt;
@@ -31,6 +32,8 @@ class BookingControllerITest {
     @Autowired
     private ReceiptRepository receiptRepository;
 
+    private final static String EMAIL_ADDRESS = "abc@example.com";
+
     @BeforeEach
     void setup() {
         passengerRepository.deleteAll();
@@ -39,54 +42,70 @@ class BookingControllerITest {
 
     @Test
     void verifyReceiptIsReceivedAndTicketIsBooked() {
-        final String emailId = "abc@example.com";
-        final Passenger passenger = new Passenger(emailId, "Abc", "Xyz");
-        passengerRepository.save(passenger);
-
+        createNewPassenger();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         final String requestBody = "{" +
                 "\"from\": \"London\"," +
                 "\"to\": \"France\"," +
-                "\"emailAddress\": \"%s\",".formatted(emailId) +
                 "\"farePaid\": 20.0" +
                 "}";
         HttpEntity<String> request = new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<Ticket> response = testRestTemplate.postForEntity("/book/%s".formatted(emailId), request, Ticket.class);
+        ResponseEntity<Ticket> response = testRestTemplate.postForEntity("/book/%s".formatted(EMAIL_ADDRESS), request, Ticket.class);
 
-        Assertions.assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
-        Assertions.assertNotNull(response.getBody());
         List<Receipt> receipts = receiptRepository.findAll();
         Assertions.assertEquals(1, receipts.size());
 
-        Ticket ticket = response.getBody();
+        Ticket ticket = assertResponse(response);
         Assertions.assertAll(
-                () -> Assertions.assertEquals(emailId, ticket.getPassenger().getEmailAddress()),
+                () -> Assertions.assertEquals(EMAIL_ADDRESS, ticket.getPassenger().getEmailAddress()),
                 () -> Assertions.assertNotNull(ticket.getReceipt().getId()),
+                () -> Assertions.assertEquals(BookingStatus.CONFIRMED, ticket.getReceipt().getStatus()),
                 () -> Assertions.assertNotNull(ticket.getSeatAllocated())
         );
     }
 
     @Test
     void shouldReturnReceiptForUser() {
-        final String emailId = "abc@example.com";
-        final Passenger passenger = new Passenger(emailId, "Abc", "Xyz");
-        passengerRepository.save(passenger);
+        final Passenger passenger = createNewPassenger();
+        addReceipt(passenger);
 
-        final Receipt receiptToSave = new Receipt("London", "France", 20.0f).forPassenger(passenger);
-        receiptRepository.save(receiptToSave);
+        ResponseEntity<Receipt> response = testRestTemplate.getForEntity("/receipt/%s".formatted(EMAIL_ADDRESS), Receipt.class);
 
-        ResponseEntity<Receipt> response = testRestTemplate.getForEntity("/receipt/%s".formatted(emailId), Receipt.class);
-
-        Assertions.assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
-        Assertions.assertNotNull(response.getBody());
-
-        Receipt receipt = response.getBody();
+        Receipt receipt = assertResponse(response);
         Assertions.assertAll(
                 () -> Assertions.assertNotNull(receipt.getId()),
                 () -> Assertions.assertNotNull(receipt.getPassenger())
         );
+    }
+
+    @Test
+    void verifyBookedReceiptIsCancelled() {
+        final Passenger passenger = createNewPassenger();
+        addReceipt(passenger);
+
+        ResponseEntity<Receipt> response = testRestTemplate.postForEntity("/cancel-booking/%s".formatted(EMAIL_ADDRESS), null, Receipt.class);
+
+        Receipt receipt = assertResponse(response);
+        Assertions.assertEquals(BookingStatus.CANCELLED, receipt.getBookingStatus());
+    }
+
+    private Passenger createNewPassenger() {
+        final Passenger passenger = new Passenger(EMAIL_ADDRESS, "Abc", "Xyz");
+        return passengerRepository.save(passenger);
+    }
+
+    private void addReceipt(Passenger passenger) {
+        final Receipt receiptToSave = new Receipt("London", "France", 20.0f).forPassenger(passenger);
+        receiptToSave.setBookingStatus(BookingStatus.CONFIRMED);
+        receiptRepository.save(receiptToSave);
+    }
+
+    private <T> T assertResponse(ResponseEntity<T> response) {
+        Assertions.assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
+        return response.getBody();
     }
 
 }

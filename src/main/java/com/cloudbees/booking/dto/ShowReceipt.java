@@ -24,11 +24,15 @@ public class ShowReceipt {
     @NotNull
     private Float farePaid;
 
+    @NotNull
+    private BookingStatus status;
+
     public ShowReceipt(final Receipt receipt) {
         this.id = receipt.getId();
         this.source = receipt.getSource();
         this.destination = receipt.getDestination();
         this.farePaid = receipt.getFarePaid();
+        this.status = receipt.getBookingStatus();
     }
 
 }

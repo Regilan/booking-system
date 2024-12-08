@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@ResponseStatus(HttpStatus.OK)
 @RequiredArgsConstructor
 public class BookingController {
 
@@ -23,15 +24,18 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping("/book/{emailAddress}")
-    @ResponseStatus(HttpStatus.OK)
     public Ticket bookTicket(@PathVariable final String emailAddress, @RequestBody @Valid final Receipt receipt) {
         Passenger passenger = passengerService.getPassenger(emailAddress);
         return bookingService.book(receipt.forPassenger(passenger));
     }
 
     @GetMapping("/receipt/{emailAddress}")
-    @ResponseStatus(HttpStatus.OK)
     public Receipt getReceipt(@PathVariable final String emailAddress) {
         return bookingService.findReceipt(emailAddress);
+    }
+
+    @PostMapping("/cancel-booking/{emailAddress}")
+    public Receipt cancelBooking(@PathVariable final String emailAddress) {
+        return bookingService.cancelBooking(emailAddress);
     }
 }
