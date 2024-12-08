@@ -1,10 +1,11 @@
 package com.cloudbees.booking.service.booking;
 
+import com.cloudbees.booking.dto.Ticket;
 import com.cloudbees.booking.model.Receipt;
-import com.cloudbees.booking.model.Ticket;
 
 public interface BookingService {
 
     Ticket book(Receipt receipt);
 
+    Receipt findReceipt(String emailAddress);
 }
